@@ -29,7 +29,7 @@ def evaluate():
 def evaluate_noise():
     model.eval()
 
-    errors = np.linspace(0,100,200)
+    errors = np.linspace(0,10,200)
     abs_err = []
 
     for z in errors:
@@ -71,7 +71,7 @@ if __name__=="__main__":
     parser.add_argument("--verbose_step", type=int, default=350)
     parser.add_argument("--importance_weight", action="store_true")
     parser.add_argument("--lr", type=int, default=1e-3)
-    parser.add_argument("--epochs", type=int, default=1)
+    parser.add_argument("--epochs", type=int, default=30)
     config = parser.parse_args()
 
     train_set = ATMDataset(config, subset='train')
