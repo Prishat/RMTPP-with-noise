@@ -46,6 +46,19 @@ class Net(nn.Module):
                            torch.exp(pred + self.intensity_w * gold + self.intensity_b)) / self.intensity_w)
         return -1 * loss
 
+    def Loss(self, pred, gold):
+        #print(self.intensity_w.dtype)
+        #print(self.intensity_b.dtype)
+
+        print(pred.shape)
+        print(self.intensity_w.cpu().detach().numpy().shape)
+        
+        loss = torch.mean(pred + self.intensity_w.cpu().detach().numpy() * gold + self.intensity_b.cpu().detach().numpy() +
+                          (torch.exp(pred + self.intensity_b.cpu().detach()) -
+                           torch.exp(pred + self.intensity_w.cpu().detach().numpy() * gold + self.intensity_b.cpu().detach().numpy())) / self.intensity_w.cpu().detach().numpy())
+        print("loss := ",loss)
+        return -1 * loss
+
     def forward(self, input_time, input_events):
         event_embedding = self.embedding(input_events)
         event_embedding = self.emb_drop(event_embedding)
