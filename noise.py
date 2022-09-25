@@ -29,7 +29,7 @@ def evaluate():
 def evaluate_noise():
     model.eval()
 
-    errors = np.linspace(0,10,200)
+    errors = np.linspace(0,100,200)
     abs_err = []
 
     for z in errors:
@@ -195,6 +195,6 @@ if __name__=="__main__":
 
         evaluate()
 
-    #evaluate_noise()
+    evaluate_noise()
     #evaluate_noise_loss()
-    evaluate_noise_loss_gradient()
+    #evaluate_noise_loss_gradient()
