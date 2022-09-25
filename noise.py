@@ -196,5 +196,5 @@ if __name__=="__main__":
         evaluate()
 
     #evaluate_noise()
-    evaluate_noise_loss()
-    #evaluate_noise_loss_gradient()
+    #evaluate_noise_loss()
+    evaluate_noise_loss_gradient()
