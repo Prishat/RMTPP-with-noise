@@ -29,7 +29,7 @@ def evaluate():
 def evaluate_noise():
     model.eval()
 
-    errors = np.linspace(0,100,200)
+    errors = np.linspace(0,10,200)
     abs_err = []
 
     for z in errors:
@@ -54,6 +54,8 @@ def evaluate_noise():
         #print(f"epoch {epc}")
         #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
 
+    plt.xlabel("Noise level ->")
+    plt.ylabel("Absolute Error ->")
     plt.plot(errors, abs_err)
     plt.savefig("file.png")
 
@@ -61,7 +63,7 @@ def evaluate_noise():
 def evaluate_noise_loss():
     model.eval()
 
-    errors = np.linspace(0,100,200)
+    errors = np.linspace(0,10,200)
     losses = []
 
     for z in errors:
@@ -83,13 +85,60 @@ def evaluate_noise_loss():
         #print(loss[0])
         loss = np.array(loss)
         losses.append(loss.mean())
-        print("loss := ", loss)
+        print("loss grad := ", loss)
         #acc, recall, f1 = clf_metric(pred_events, gold_events, n_class=config.event_class)
         #print(f"epoch {epc}")
         #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
 
+    plt.xlabel("Noise level ->")
+    plt.ylabel("RMTPP Loss ->")
     plt.plot(errors, losses)
     plt.savefig("file_loss.png")
+
+
+def evaluate_noise_loss_gradient():
+    #model.eval()
+
+    errors = np.linspace(0,10,200)
+    losses = []
+
+    for z in errors:
+        pred_times, pred_events = [], []
+        gold_times, gold_events = [], []
+        loss = []
+        model.train()
+        for i, batch in enumerate(tqdm(test_loader)):
+            batch[0][0] += z
+            time_tensor, event_tensor = batch
+            time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
+            event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
+
+            time_target.requires_grad = True
+
+            time_logits, event_logits = model.forward(time_input, event_input)
+            loss1 = model.time_criterion(time_logits.view(-1), time_target.view(-1))
+            loss1.backward()
+            #print("loss1 grad wrt time_target :=", time_target.grad)
+            #print("grad shape", time_target.grad.shape)
+            #quit()
+
+            loss.append(time_target.grad[0].cpu().detach().numpy())
+
+
+        #loss = model.Loss(pred_times, gold_times)
+        #print(loss[0])
+        loss = np.array(loss)
+        losses.append(loss.mean())
+        print("loss gradient := ", loss)
+        #acc, recall, f1 = clf_metric(pred_events, gold_events, n_class=config.event_class)
+        #print(f"epoch {epc}")
+        #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
+
+    plt.xlabel("Noise level ->")
+    plt.ylabel("RMTPP Loss gradient wrt to first target ->")
+    plt.plot(errors, losses)
+    plt.savefig("file_loss_grad.png")
+
 
 if __name__=="__main__":
     parser = ArgumentParser()
@@ -146,5 +195,6 @@ if __name__=="__main__":
 
         evaluate()
 
-    #evaluate_noise()
+    evaluate_noise()
     evaluate_noise_loss()
+    evaluate_noise_loss_gradient()
