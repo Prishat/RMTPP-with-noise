@@ -78,7 +78,8 @@ def evaluate_noise_loss():
             #print("batch[0] shape := ", len(batch[0]))
             #print("batch[0][0] shape := ", len(batch[0][0]))
             #batch[0][0][0] += z
-            batch[0][0] += z
+            #batch[0][0] += z
+            batch[0][:][0] +=z
             time_tensor, event_tensor = batch
             time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
             event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
@@ -261,6 +262,6 @@ if __name__=="__main__":
         evaluate()
 
     #evaluate_noise()
-    #evaluate_noise_loss()
+    evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
-    evaluate_noise_loss_ipgradient()
+    #evaluate_noise_loss_ipgradient()
