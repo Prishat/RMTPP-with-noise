@@ -77,7 +77,8 @@ def evaluate_noise_loss():
             #print("batch shape := ", len(batch))
             #print("batch[0] shape := ", len(batch[0]))
             #print("batch[0][0] shape := ", len(batch[0][0]))
-            batch[0][0][0] += z
+            #batch[0][0][0] += z
+            batch[0][0] += z
             time_tensor, event_tensor = batch
             time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
             event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
@@ -155,15 +156,19 @@ def evaluate_noise_loss_ipgradient():
     model.train()
 
     errors = np.linspace(0,10,200)
-    losses = []
+    gradient = []
 
     for z in errors:
         pred_times, pred_events = [], []
         gold_times, gold_events = [], []
-        loss = []
+        grad = []
         #model.train()
         for i, batch in enumerate(tqdm(test_loader)):
-            batch[0][0] += z
+            #print("i := ",i)
+            if i != 0:
+                continue
+            
+            batch[0][0][0] += z
             time_tensor, event_tensor = batch
             time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
             event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
@@ -175,26 +180,29 @@ def evaluate_noise_loss_ipgradient():
             #time_logits.backward()
             loss1 = model.time_criterion(time_logits.view(-1), time_target.view(-1))
             loss1.backward()
-            print("loss1 grad wrt time_input :=", time_input.grad)
-            print("grad shape", time_input.grad.shape)
-            quit()
+            #print("loss1 grad wrt time_input :=", time_input.grad[0])
+            #print("grad shape", time_input.grad[0].shape)
+            #quit()
 
-            loss.append(time_target.grad[0].cpu().detach().numpy())
+            g = time_input.grad[0].cpu().detach().numpy()
+            print("g := ",g)
+            grad.append(g[0])
+            
 
 
         #loss = model.Loss(pred_times, gold_times)
         #print(loss[0])
-        loss = np.array(loss)
-        losses.append(loss.mean())
-        print("loss gradient := ", loss)
+        grad = np.array(grad)
+        gradient.append(grad.mean())
+        #print("loss gradient := ", loss)
         #acc, recall, f1 = clf_metric(pred_events, gold_events, n_class=config.event_class)
         #print(f"epoch {epc}")
         #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
 
     plt.xlabel("Noise level ->")
-    plt.ylabel("RMTPP Loss gradient wrt to first target ->")
-    plt.plot(errors, losses)
-    plt.savefig("file_loss_grad.png")
+    plt.ylabel("RMTPP Loss gradient wrt to first input ->")
+    plt.plot(errors, gradient)
+    plt.savefig("file_loss_ipgrad.png")
 
 
 if __name__=="__main__":
@@ -253,6 +261,6 @@ if __name__=="__main__":
         evaluate()
 
     #evaluate_noise()
-    evaluate_noise_loss()
+    #evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
-    #evaluate_noise_loss_ipgradient()
+    evaluate_noise_loss_ipgradient()
