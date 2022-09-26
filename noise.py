@@ -70,7 +70,10 @@ def evaluate_noise_loss():
         pred_times, pred_events = [], []
         gold_times, gold_events = [], []
         loss = []
+        vline = []
         for i, batch in enumerate(tqdm(test_loader)):
+            v = batch[0][1]-batch[0][0]
+            vline.append(v.cpu().detach().numpy())
             batch[0][0] += z
             time_tensor, event_tensor = batch
             time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
@@ -90,9 +93,12 @@ def evaluate_noise_loss():
         #print(f"epoch {epc}")
         #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
 
+    vline = np.array(vline)
+
     plt.xlabel("Noise level ->")
     plt.ylabel("RMTPP Loss ->")
     plt.plot(errors, losses)
+    plt.axvline(x=vline.mean())
     plt.savefig("file_loss.png")
 
 
