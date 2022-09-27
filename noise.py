@@ -187,7 +187,7 @@ def evaluate_noise_loss_ipgradient():
 
             g = time_input.grad[0].cpu().detach().numpy()
             print("g := ",g)
-            grad.append(g[0])
+            grad.append(g)
             
 
 
@@ -262,6 +262,6 @@ if __name__=="__main__":
         evaluate()
 
     #evaluate_noise()
-    evaluate_noise_loss()
+    #evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
-    #evaluate_noise_loss_ipgradient()
+    evaluate_noise_loss_ipgradient()
