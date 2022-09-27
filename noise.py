@@ -29,14 +29,14 @@ def evaluate():
 def evaluate_noise():
     model.eval()
 
-    errors = np.linspace(0,100,200)
+    errors = np.linspace(0,10,200)
     abs_err = []
 
     for z in errors:
         pred_times, pred_events = [], []
         gold_times, gold_events = [], []
         for i, batch in enumerate(tqdm(test_loader)):
-            batch[0][0] += z
+            batch[0][:][0] += z
             gold_times.append(batch[0][:, -1].numpy())
             gold_events.append(batch[1][:, -1].numpy())
             pred_time, pred_event = model.predict(batch)
@@ -261,7 +261,7 @@ if __name__=="__main__":
 
         evaluate()
 
-    #evaluate_noise()
+    evaluate_noise()
     #evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
-    evaluate_noise_loss_ipgradient()
+    #evaluate_noise_loss_ipgradient()
