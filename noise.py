@@ -29,7 +29,7 @@ def evaluate():
 def evaluate_noise():
     model.eval()
 
-    errors = np.linspace(0,10,200)
+    errors = np.linspace(0,1,200)
     abs_err = []
 
     for z in errors:
