@@ -63,7 +63,7 @@ def evaluate_noise():
 def evaluate_noise_loss():
     model.eval()
 
-    errors = np.linspace(0,10,200)
+    errors = np.linspace(0,1,200)
     losses = []
 
     for z in errors:
