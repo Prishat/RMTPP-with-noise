@@ -60,6 +60,55 @@ def evaluate_noise():
     plt.savefig("file.png")
 
 
+def evaluate_noise_gaussian(mu = 0.0, sigma = 1.0, steps = 200):
+    model.eval()
+
+    errors = np.linspace(0,1,200)
+    losses = []
+
+    for i in range(steps):
+        pred_times, pred_events = [], []
+        gold_times, gold_events = [], []
+        loss = []
+        #vline = []
+        for i, batch in enumerate(tqdm(test_loader)):
+            #v = batch[0][1]-batch[0][0]
+            #vline.append(v.cpu().detach().numpy())
+            #print("batch shape := ", len(batch))
+            #print("batch[0] shape := ", len(batch[0]))
+            #print("batch[0][0] shape := ", len(batch[0][0]))
+            #batch[0][0][0] += z
+            #batch[0][0] += z
+            batch[0][:][0] += np.random.normal(mu, sigma, 1)
+            time_tensor, event_tensor = batch
+            time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
+            event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
+
+            time_logits, event_logits = model.forward(time_input, event_input)
+            loss1 = model.time_criterion(time_logits.view(-1), time_target.view(-1))
+            loss.append(loss1.cpu().detach().numpy())
+
+
+        #loss = model.Loss(pred_times, gold_times)
+        #print(loss[0])
+        loss = np.array(loss)
+        losses.append(loss.mean())
+        print("loss := ", loss)
+        #acc, recall, f1 = clf_metric(pred_events, gold_events, n_class=config.event_class)
+        #print(f"epoch {epc}")
+        #print(f"time_error: {time_error}, PRECISION: {acc}, RECALL: {recall}, F1: {f1}")
+
+    #vline = np.array(vline)
+
+    #plt.xlabel("Noise level ->")
+    plt.ylabel("RMTPP Loss ->")
+    plt.plot(losses)
+    #plt.axvline(x=vline.mean())
+    plt.savefig("file_gaussian_loss.png")
+
+
+
+
 def evaluate_noise_loss():
     model.eval()
 
@@ -261,7 +310,8 @@ if __name__=="__main__":
 
         evaluate()
 
-    evaluate_noise()
+    #evaluate_noise()
     #evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
     #evaluate_noise_loss_ipgradient()
+    evaluate_noise_gaussian()
