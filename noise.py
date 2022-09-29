@@ -314,4 +314,4 @@ if __name__=="__main__":
     #evaluate_noise_loss()
     #evaluate_noise_loss_gradient()
     #evaluate_noise_loss_ipgradient()
-    evaluate_noise_gaussian()
+    evaluate_noise_gaussian(0,0.1,200)
