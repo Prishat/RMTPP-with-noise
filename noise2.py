@@ -66,8 +66,11 @@ if __name__=="__main__":
             batch[0][:][0] += np.random.normal(2, 2, len(batch[0][0]))
             l1, l2, l = model.train_batch(batch)
 
-            if i==0:
-                losses.append(l1)
+            losses.append(l1)
+
+            #if i==0:
+                #print("l1 := ", l1)
+                #losses.append(l1)
             
             range_loss1 += l1
             range_loss2 += l2
@@ -82,5 +85,6 @@ if __name__=="__main__":
         evaluate()
 
     print("starting plot -----------------------------------------------------------------------------------")
+    print("losses := ", losses)
     plt.plot(losses)
     plt.savefig("figures/train_loss.png")
