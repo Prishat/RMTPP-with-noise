@@ -58,19 +58,41 @@ if __name__=="__main__":
     model.set_optimizer(total_step=len(train_loader) * config.epochs, use_bert=True)
     model.cuda()
 
+    grad_plot = True
+    grads = []
+    losses = []
     for epc in range(config.epochs):
         model.train()
-        losses = []
+        #losses = []
         range_loss1 = range_loss2 = range_loss = 0
         for i, batch in enumerate(tqdm(train_loader)):
-            batch[0][:][0] += np.random.normal(2, 2, len(batch[0][0]))
+            if grad_plot and i==0:
+                batch[0][0][0] += np.random.normal(2, 2, 1)
+                time_tensor, event_tensor = batch
+                time_input, time_target = model.dispatch([time_tensor[:, :-1], time_tensor[:, -1]])
+                event_input, event_target = model.dispatch([event_tensor[:, :-1], event_tensor[:, -1]])
+
+                time_input.requires_grad = True
+
+                time_logits, event_logits = model.forward(time_input, event_input)
+                loss1 = model.time_criterion(time_logits.view(-1), time_target.view(-1))
+                loss1.backward()
+
+                g = time_input.grad[0].cpu().detach().numpy()
+                print("g := ",g)
+                grads.append(g[0])
+
+            #batch[0][:][0] += np.random.normal(2, 2, len(batch[0][0]))
+            if i==0:
+                batch[0][0][0] += np.random.normal(2, 2, 1)
+            
             l1, l2, l = model.train_batch(batch)
 
-            losses.append(l1)
+            #losses.append(l1)
 
-            #if i==0:
+            if i==0:
                 #print("l1 := ", l1)
-                #losses.append(l1)
+                losses.append(l1)
             
             range_loss1 += l1
             range_loss2 += l2
@@ -82,9 +104,22 @@ if __name__=="__main__":
                 print("total loss:", range_loss / config.verbose_step)
                 range_loss1 = range_loss2 = range_loss = 0
 
+        #losses.append(range_loss1)
         evaluate()
 
     print("starting plot -----------------------------------------------------------------------------------")
+    
+    if grad_plot:
+        print("gradients := ", grads)
+        plt.xlabel("epochs ->")
+        plt.ylabel("gradients ->")
+        plt.plot(grads)
+        plt.savefig("figures/train_gradients.png")
+
+
+
     print("losses := ", losses)
+    plt.xlabel("epochs ->")
+    plt.ylabel("loss ->")
     plt.plot(losses)
     plt.savefig("figures/train_loss.png")
